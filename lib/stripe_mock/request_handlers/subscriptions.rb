@@ -95,7 +95,7 @@ module StripeMock
           customer[:default_source] = new_card[:id]
         end
 
-        allowed_params = %w(customer application_fee_percent coupon items metadata plan quantity source tax_percent trial_end trial_period_days current_period_start created prorate)
+        allowed_params = %w(customer application_fee_percent coupon items metadata plan quantity source tax_percent trial_end trial_period_days current_period_start created prorate billing days_until_due)
         unknown_params = params.keys - allowed_params.map(&:to_sym)
         if unknown_params.length > 0
           raise Stripe::InvalidRequestError.new("Received unknown parameter: #{unknown_params.join}", unknown_params.first.to_s, http_status: 400)
@@ -251,7 +251,8 @@ module StripeMock
               plan[:amount] != 0 &&
               plan[:trial_end].nil?)) &&
           params[:trial_end].nil? &&
-          (subscription.nil? || subscription[:trial_end].nil? || subscription[:trial_end] == 'now')
+          (subscription.nil? || subscription[:trial_end].nil? || subscription[:trial_end] == 'now') &&
+          customer[:billing] == 'charge_automatically'
 
           if subscription[:items]
             trial = subscription[:items][:data].none? do |item|
